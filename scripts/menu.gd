@@ -81,18 +81,13 @@ func _title_screen() -> void:
 	v.add_theme_constant_override("separation", 8)
 	_center(v)
 	_stage.add_child(v)
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 20)
-	for k in ["dish:nasi_lemak", "dish:teh_tarik", "dish:karipap", "dish:roti_jala"]:
-		row.add_child(UiKit.thumb(k, 96))
-	v.add_child(row)
-	var t := UiKit.lbl("WARUNG KALUT", 80, UiKit.GOLD, 16)
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(t)
-	var s := UiKit.lbl(Lang.t("Cook in chaos. Learn Malaysian food."), 26, UiKit.CREAM, 8)
-	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(s)
+	var logo := TextureRect.new()
+	logo.texture = load("res://Assets/logo.png")
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	logo.custom_minimum_size = Vector2(424, 320)
+	v.add_child(logo)
 	var sp := Control.new()
 	sp.custom_minimum_size = Vector2(0, 6)
 	v.add_child(sp)

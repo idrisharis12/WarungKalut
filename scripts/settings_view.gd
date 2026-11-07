@@ -170,6 +170,33 @@ func _build_display() -> void:
 
 
 func _build_look() -> void:
+	var mb := _cycle("On" if Prefs.music_on else "Off", func(): pass)
+	mb.pressed.connect(func():
+		Prefs.music_on = not Prefs.music_on
+		mb.text = "On" if Prefs.music_on else "Off"
+		Prefs.apply_audio()
+		Prefs.save())
+	_row("Music", mb)
+	var vs := HSlider.new()
+	vs.min_value = 0.0
+	vs.max_value = 1.0
+	vs.step = 0.05
+	vs.value = Prefs.music_vol
+	vs.custom_minimum_size = Vector2(130, 28)
+	vs.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var vl := UiKit.lbl("%d%%" % roundi(Prefs.music_vol * 100.0), 20, UiKit.CREAM)
+	vl.custom_minimum_size = Vector2(54, 0)
+	vl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	vs.value_changed.connect(func(v):
+		Prefs.music_vol = v
+		vl.text = "%d%%" % roundi(v * 100.0)
+		Prefs.apply_audio())
+	vs.drag_ended.connect(func(_c): Prefs.save())
+	vs.focus_exited.connect(Prefs.save)
+	var vbox := HBoxContainer.new()
+	vbox.add_child(vs)
+	vbox.add_child(vl)
+	_row("Music volume", vbox)
 	for p in 2:
 		var ob := _cycle("", func(): pass)
 		var hb := _cycle("", func(): pass)

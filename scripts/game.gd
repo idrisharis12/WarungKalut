@@ -3,6 +3,8 @@ extends CanvasLayer
 
 signal stage_changed(index: int)
 signal served_ok
+signal police_called
+signal police_left
 
 const ITEM_THUMB := {
 	"batter:mixed": "batter:mixed", "chicken:cooked": "chicken:cooked", "shallot:chopped": "shallot:chopped",
@@ -17,6 +19,7 @@ var point := 20.0
 var combo := 0
 var score := 0
 var police_armed := false
+var police_active := false
 var over := false
 var elapsed := 0.0
 var hold_100 := 0.0
@@ -308,7 +311,19 @@ func _change(d: float) -> void:
 		return
 	if point >= Recipes.POLICE_LINE:
 		police_armed = true
-	elif police_armed:
+		if police_active:
+			police_active = false
+			police_left.emit()
+			_say("Police backed off. Stay above 50%!", Color(0.55, 1, 0.5))
+	elif police_armed and not police_active and not over:
+		police_active = true
+		police_called.emit()
+		_beep("bad")
+		_say("Police are coming! Get above 50%!", Color(0.45, 0.65, 1.0))
+
+
+func busted() -> void:
+	if not over:
 		_end(false)
 
 
@@ -336,7 +351,7 @@ func _end(won: bool) -> void:
 	var sl := UiKit.lbl("Score %d    Time %d:%02d" % [score, int(elapsed) / 60, int(elapsed) % 60], 24, UiKit.CREAM)
 	sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	end_body.add_child(sl)
-	var sub := UiKit.lbl(("%s is famous!" % level["name"]) if won else "Malaysia Meter fell below 50%", 20, UiKit.CREAM)
+	var sub := UiKit.lbl(("%s is famous!" % level["name"]) if won else "The police caught the chef", 20, UiKit.CREAM)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	end_body.add_child(sub)
 	var learn_id: String = (level["dishes"] as Array).pick_random()
@@ -400,6 +415,8 @@ func _refresh() -> void:
 	level_label.text = "Training" if Recipes.tutorial else "%d. %s    Score %d    %d:%02d" % [stage + 1, level["name"], score, int(elapsed) / 60, int(elapsed) % 60]
 	if point >= 100.0:
 		status_label.text = "Hold 100%%: %d / %d s" % [int(hold_100), int(level["hold"])]
+	elif police_active:
+		status_label.text = "Police are coming! Get above 50%!"
 	elif police_armed:
 		status_label.text = "Police watching: stay above 50%!"
 	else:

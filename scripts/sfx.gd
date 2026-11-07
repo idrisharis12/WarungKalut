@@ -211,6 +211,8 @@ static func urgency(x: float) -> void:
 
 # Looping pentatonic marimba-style tune, synthesised so no audio file is needed.
 static func music() -> void:
+	Prefs.load_prefs()
+	Prefs.apply_audio()
 	if is_instance_valid(_music):
 		return
 	var rate := 22050
@@ -263,12 +265,14 @@ static func music() -> void:
 	_drive = AudioStreamPlayer.new()
 	_drive.stream = dw
 	_drive.volume_db = -60.0
+	_drive.bus = "Music"
 	_drive.process_mode = Node.PROCESS_MODE_ALWAYS
 	(Engine.get_main_loop() as SceneTree).root.add_child.call_deferred(_drive)
 	_drive.ready.connect(_drive.play, CONNECT_ONE_SHOT)
 	_music = AudioStreamPlayer.new()
 	_music.stream = w
 	_music.volume_db = -20.0
+	_music.bus = "Music"
 	_music.process_mode = Node.PROCESS_MODE_ALWAYS
 	(Engine.get_main_loop() as SceneTree).root.add_child.call_deferred(_music)
 	_music.ready.connect(_music.play, CONNECT_ONE_SHOT)

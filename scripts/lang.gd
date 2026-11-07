@@ -39,6 +39,7 @@ const MS := {
 	"Take chicken from its crate and put it in the WOK. Take it out when it is golden, before it burns.": "Ambil ayam dan letak dalam KUALI. Angkat bila keemasan, sebelum hangus.",
 	"Take a clean plate. Then stand next to the food and press the pick key to add each item to the plate.": "Ambil pinggan bersih. Berdiri di sebelah makanan dan tekan kekunci ambil untuk menambah ke pinggan.",
 	"Carry the finished Roti Jala to the SERVE hatch on the right wall. The order is on the ticket.": "Bawa Roti Jala ke tingkap HIDANG di dinding kanan. Tempahan ada pada tiket.",
+	"Music": "Muzik", "Music volume": "Kelantangan muzik", "On": "Hidup", "Off": "Mati",
 	"Siap!": "Siap!",
 }
 

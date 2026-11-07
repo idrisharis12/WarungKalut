@@ -24,6 +24,9 @@ var _env: Environment
 var _sun: DirectionalLight3D
 var _cart: AnimatableBody3D
 var _puddle_node: MeshInstance3D
+var _chefs: Array[Chef] = []
+var _cop: Node3D
+var _cop_chase := false
 
 
 # Scales node so its meshes are `h` tall, centres it on x/z and sits it on y=0.
@@ -79,8 +82,13 @@ func _ready() -> void:
 		chef2.player = 1
 		chef2.position = Vector3(6.6, 0, 1.6)
 		add_child(chef2)
+	_chefs.append(chef)
+	if chef2:
+		_chefs.append(chef2)
 	game = Game.new()
 	add_child(game)
+	game.police_called.connect(_police_call)
+	game.police_left.connect(func(): _cop_chase = false)
 	_layout(chef)
 	if chef2:
 		chef2.stations = chef.stations
@@ -179,6 +187,53 @@ func _customers() -> void:
 		customers.append(c)
 	_fit(SHOP + "display-bread.glb", Vector3(12.0, 0, 5.2), 1.2, -PI / 2)
 	_fit(SHOP + "display-fruit.glb", Vector3(12.0, 0, 6.4), 1.2, -PI / 2)
+
+
+const COP_SPAWN := Vector3(15.5, 0, 2.5)
+const COP_SPEED := 1.9
+const COP_CATCH := 0.85
+
+
+func _police_call() -> void:
+	_cop_chase = true
+	if is_instance_valid(_cop):
+		return
+	var p := BLOCKY + "character-j.glb"
+	if not ResourceLoader.exists(p):
+		return
+	_cop = Node3D.new()
+	var m := (load(p) as PackedScene).instantiate() as Node3D
+	_cop.add_child(m)
+	add_child(_cop)
+	Kitchen.fit_height(m, 1.25)
+	Toon.apply(_cop, 0.012)
+	_cop.position = COP_SPAWN
+	_anim(m, "walk")
+
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(_cop) or game.over:
+		return
+	var target := COP_SPAWN
+	if _cop_chase:
+		var best := INF
+		for c in _chefs:
+			var d := _cop.position.distance_to(c.global_position)
+			if d < best:
+				best = d
+				target = c.global_position
+		if best < COP_CATCH:
+			game.busted()
+			return
+	var to := target - _cop.position
+	to.y = 0.0
+	if to.length() < 0.1:
+		if not _cop_chase:
+			_cop.queue_free()
+			_cop = null
+		return
+	_cop.position += to.normalized() * minf(COP_SPEED * delta, to.length())
+	_cop.rotation.y = lerp_angle(_cop.rotation.y, atan2(to.x, to.z), 0.2)
 
 
 func _anim(n: Node3D, a: String) -> void:

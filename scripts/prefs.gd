@@ -30,6 +30,8 @@ static var outfit2 := 1
 static var hat := 1
 static var hat2 := 0
 static var help_always := false
+static var music_on := true
+static var music_vol := 0.7
 static var favs: Array = []
 static var learned := {}
 static var ach := {}
@@ -50,6 +52,8 @@ static func load_prefs() -> void:
 	hat = clampi(int(cf.get_value("prefs", "hat", 1)), 0, HATS.size() - 1)
 	hat2 = clampi(int(cf.get_value("prefs", "hat2", 0)), 0, HATS.size() - 1)
 	help_always = bool(cf.get_value("prefs", "help_always", false))
+	music_on = bool(cf.get_value("prefs", "music_on", true))
+	music_vol = clampf(float(cf.get_value("prefs", "music_vol", 0.7)), 0.0, 1.0)
 	favs = Array(cf.get_value("prefs", "favs", []))
 	learned = Dictionary(cf.get_value("prefs", "learned", {}))
 	ach = Dictionary(cf.get_value("prefs", "ach", {}))
@@ -67,10 +71,22 @@ static func save() -> void:
 	cf.set_value("prefs", "hat", hat)
 	cf.set_value("prefs", "hat2", hat2)
 	cf.set_value("prefs", "help_always", help_always)
+	cf.set_value("prefs", "music_on", music_on)
+	cf.set_value("prefs", "music_vol", music_vol)
 	cf.set_value("prefs", "favs", favs)
 	cf.set_value("prefs", "learned", learned)
 	cf.set_value("prefs", "ach", ach)
 	cf.save(PATH)
+
+
+static func apply_audio() -> void:
+	var i := AudioServer.get_bus_index("Music")
+	if i < 0:
+		AudioServer.add_bus()
+		i = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, "Music")
+	AudioServer.set_bus_mute(i, not music_on)
+	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(music_vol, 0.0001)))
 
 
 static func apply_window() -> void:
