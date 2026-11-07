@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://5vv8ismtif86"
+path="res://.godot/imported/bottle-return.obj-5a5d714f182fd02c2e4778541c6d33a9.mesh"
+
+[deps]
+
+files=["res://.godot/imported/bottle-return.obj-5a5d714f182fd02c2e4778541c6d33a9.mesh"]
+
+source_file="res://Assets/kenney_mini-shop_2.1/Models/OBJ format/bottle-return.obj"
+dest_files=["res://.godot/imported/bottle-return.obj-5a5d714f182fd02c2e4778541c6d33a9.mesh", "res://.godot/imported/bottle-return.obj-5a5d714f182fd02c2e4778541c6d33a9.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cam585fjm8upj"
+path="res://.godot/imported/Spoon.obj-7936553ba2e18b463495a47d1ce958cc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Spoon.obj-7936553ba2e18b463495a47d1ce958cc.mesh"]
+
+source_file="res://Assets/um/Ultimate Food Pack - Oct 2019/OBJ/Spoon.obj"
+dest_files=["res://.godot/imported/Spoon.obj-7936553ba2e18b463495a47d1ce958cc.mesh", "res://.godot/imported/Spoon.obj-7936553ba2e18b463495a47d1ce958cc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

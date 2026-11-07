@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b7pthc8c28f6o"
+path="res://.godot/imported/Sushi_NigiriOctopus.obj-6ed1104a7cf6def554e34e7b69da693f.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Sushi_NigiriOctopus.obj-6ed1104a7cf6def554e34e7b69da693f.mesh"]
+
+source_file="res://Assets/um/Ultimate Food Pack - Oct 2019/OBJ/Sushi_NigiriOctopus.obj"
+dest_files=["res://.godot/imported/Sushi_NigiriOctopus.obj-6ed1104a7cf6def554e34e7b69da693f.mesh", "res://.godot/imported/Sushi_NigiriOctopus.obj-6ed1104a7cf6def554e34e7b69da693f.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dytfg5syy5tip"
+path="res://.godot/imported/Sausage_Raw.obj-9c2e26718a32ad5aa7ea27b6106535e5.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Sausage_Raw.obj-9c2e26718a32ad5aa7ea27b6106535e5.mesh"]
+
+source_file="res://Assets/um/Ultimate Food Pack - Oct 2019/OBJ/Sausage_Raw.obj"
+dest_files=["res://.godot/imported/Sausage_Raw.obj-9c2e26718a32ad5aa7ea27b6106535e5.mesh", "res://.godot/imported/Sausage_Raw.obj-9c2e26718a32ad5aa7ea27b6106535e5.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

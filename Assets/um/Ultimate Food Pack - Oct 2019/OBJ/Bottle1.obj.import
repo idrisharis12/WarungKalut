@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dyx65oiebvy2t"
+path="res://.godot/imported/Bottle1.obj-f4e22b8f7469f22c167d1aaa3a1ca41b.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Bottle1.obj-f4e22b8f7469f22c167d1aaa3a1ca41b.mesh"]
+
+source_file="res://Assets/um/Ultimate Food Pack - Oct 2019/OBJ/Bottle1.obj"
+dest_files=["res://.godot/imported/Bottle1.obj-f4e22b8f7469f22c167d1aaa3a1ca41b.mesh", "res://.godot/imported/Bottle1.obj-f4e22b8f7469f22c167d1aaa3a1ca41b.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

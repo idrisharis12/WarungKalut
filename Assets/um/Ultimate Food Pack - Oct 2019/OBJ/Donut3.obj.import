@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b8ny166dmf2ic"
+path="res://.godot/imported/Donut3.obj-b7dd3bb4a8950378c5dfa5ff60afed2f.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Donut3.obj-b7dd3bb4a8950378c5dfa5ff60afed2f.mesh"]
+
+source_file="res://Assets/um/Ultimate Food Pack - Oct 2019/OBJ/Donut3.obj"
+dest_files=["res://.godot/imported/Donut3.obj-b7dd3bb4a8950378c5dfa5ff60afed2f.mesh", "res://.godot/imported/Donut3.obj-b7dd3bb4a8950378c5dfa5ff60afed2f.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
