@@ -27,6 +27,10 @@ var _puddle_node: MeshInstance3D
 var _chefs: Array[Chef] = []
 var _cop: Node3D
 var _cop_chase := false
+var _cam: Camera3D
+var _shake := 0.0
+var _cop_stall := 0.0
+var _grace: Dictionary = {}
 
 
 # Scales node so its meshes are `h` tall, centres it on x/z and sits it on y=0.
@@ -97,6 +101,7 @@ func _ready() -> void:
 	_customers()
 	Toon.apply(self)
 	game.served_ok.connect(_cheer)
+	game.served_ok.connect(func(): _grace.clear())
 	_on_stage(Recipes.level)
 	if Recipes.tutorial:
 		var tut := Tutorial.new()
@@ -189,8 +194,8 @@ func _customers() -> void:
 	_fit(SHOP + "display-fruit.glb", Vector3(12.0, 0, 6.4), 1.2, -PI / 2)
 
 
-const COP_SPAWN := Vector3(15.5, 0, 2.5)
-const COP_SPEED := 1.9
+const COP_SPAWN := Vector3(9.4, 0, 3.0)
+const COP_SPEED := 1.7
 const COP_CATCH := 0.85
 
 
@@ -211,20 +216,68 @@ func _police_call() -> void:
 	_anim(m, "walk")
 
 
+func shake(amount := 0.25) -> void:
+	_shake = maxf(_shake, amount)
+
+
+func _blocked(p: Vector3) -> bool:
+	for s in _chefs[0].stations:
+		if absf(p.x - s.global_position.x) < 0.62 and absf(p.z - s.global_position.z) < 0.62:
+			return true
+	return false
+
+
+func _cop_target() -> Chef:
+	var best := INF
+	var out: Chef
+	for c in _chefs:
+		if _grace.has(c) and float(_grace[c]) > 0.0:
+			continue
+		var d := _cop.position.distance_to(c.global_position)
+		if d < best:
+			best = d
+			out = c
+	return out
+
+
+func cop_near(p: Vector3) -> bool:
+	return is_instance_valid(_cop) and _cop_chase and _cop.position.distance_to(p) < 1.8
+
+
+func bribe() -> void:
+	if is_instance_valid(_cop) and _cop_chase:
+		_cop_stall = 10.0
+		game.hint("Teh tarik bribe! The officer is distracted for 10 s.")
+
+
 func _process(delta: float) -> void:
+	if _shake > 0.0 and is_instance_valid(_cam):
+		_shake = maxf(_shake - delta * 0.9, 0.0)
+		_cam.h_offset = randf_range(-1.0, 1.0) * _shake
+	for c in _grace.keys():
+		_grace[c] = float(_grace[c]) - delta
 	if not is_instance_valid(_cop) or game.over:
 		return
+	_cop_stall = maxf(_cop_stall - delta, 0.0)
 	var target := COP_SPAWN
 	if _cop_chase:
-		var best := INF
-		for c in _chefs:
-			var d := _cop.position.distance_to(c.global_position)
-			if d < best:
-				best = d
-				target = c.global_position
-		if best < COP_CATCH:
-			game.busted()
-			return
+		var tc := _cop_target()
+		if tc != null:
+			target = tc.global_position
+			if _cop.position.distance_to(tc.global_position) < COP_CATCH and _cop_stall <= 0.0:
+				if _chefs.size() > 1 and not _grace.has("used"):
+					_grace["used"] = 1.0
+					_grace[tc] = 8.0
+					_shake = 0.4
+					game.hint("Chef caught! Partner, serve a dish to free them!")
+					_cop.position = COP_SPAWN
+				else:
+					game.busted()
+				return
+		else:
+			target = COP_SPAWN
+	if _cop_stall > 0.0:
+		return
 	var to := target - _cop.position
 	to.y = 0.0
 	if to.length() < 0.1:
@@ -232,7 +285,13 @@ func _process(delta: float) -> void:
 			_cop.queue_free()
 			_cop = null
 		return
-	_cop.position += to.normalized() * minf(COP_SPEED * delta, to.length())
+	var step := to.normalized() * minf(COP_SPEED * delta, to.length())
+	var nx := _cop.position + Vector3(step.x, 0, 0)
+	var nz := _cop.position + Vector3(0, 0, step.z)
+	if not _blocked(nx):
+		_cop.position.x = nx.x
+	if not _blocked(nz):
+		_cop.position.z = nz.z
 	_cop.rotation.y = lerp_angle(_cop.rotation.y, atan2(to.x, to.z), 0.2)
 
 
@@ -359,6 +418,8 @@ func _station(kind: Station.Kind, id: String, pos: Vector3, yaw: float, chef: Ch
 	_station_look(s)
 	s.dish_served.connect(game.serve)
 	s.fire_started.connect(game.fire_started)
+	s.fire_started.connect(shake.bind(0.25))
+	s.wasted_burnt.connect(game.burnt_binned)
 	chef.stations.append(s)
 	chef.kitchen = self
 	return s
@@ -545,6 +606,7 @@ func _camera() -> void:
 	c.projection = Camera3D.PROJECTION_ORTHOGONAL
 	c.keep_aspect = Camera3D.KEEP_HEIGHT
 	c.far = 80.0
+	_cam = c
 	c.position = Vector3(5, 20, 3 + 6.5)
 	add_child(c)
 	c.look_at(Vector3(5, 0, 3))
@@ -552,7 +614,7 @@ func _camera() -> void:
 	var fit := func():
 		var sz := get_viewport().get_visible_rect().size
 		var free := (sz.y - Game.TOP - Game.BOT) / sz.y
-		c.size = maxf(7.5 / free, 13.4 * sz.y / sz.x)
+		c.size = maxf(8.3 / free, 13.4 * sz.y / sz.x)
 		c.v_offset = (Game.TOP - Game.BOT) / 2.0 / sz.y * c.size
 	get_viewport().size_changed.connect(fit)
 	fit.call()

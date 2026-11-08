@@ -26,7 +26,13 @@ var _tween: Tween
 var _burn_timer := 0.0
 
 
+const COOK := {"rice": [8.0, 6.0], "noodles": [7.0, 5.0], "chicken": [6.0, 5.0], "anchovy": [4.5, 4.0], "prawn": [5.0, 4.0], "tofu": [5.0, 5.0], "peanut": [4.0, 4.0]}
+
+
 func _ready() -> void:
+	if COOK.has(ingredient_id):
+		cook_seconds = COOK[ingredient_id][0]
+		burn_seconds = COOK[ingredient_id][1]
 	scale = Vector3.ONE * 1.7
 	_swap_mesh("raw", false)
 

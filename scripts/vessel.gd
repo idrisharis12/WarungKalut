@@ -13,6 +13,7 @@ var contents: Array[String] = []
 var pulls := 0
 var _base: Node3D
 var _tops: Array[Node3D] = []
+var _dish_spr: Node3D
 
 
 func _ready() -> void:
@@ -65,7 +66,36 @@ func add(ing: Ingredient) -> void:
 		m.position = Vector3(cos(a) * 0.15, 0.06 if not spr else 0.1, sin(a) * 0.15)
 		m.scale = Vector3.ONE * (0.6 if spr else 0.85)
 		_tops.append(m)
+	_show_dish()
 	ing.queue_free()
+
+
+func _show_dish() -> void:
+	if is_instance_valid(_dish_spr):
+		_dish_spr.queue_free()
+		_dish_spr = null
+	var d := Recipes.dish_of(contents)
+	for t in _tops:
+		t.visible = d == ""
+	if d == "":
+		return
+	var tex := Thumbs.tex("dish:" + d)
+	if tex == null:
+		return
+	var sp := Sprite3D.new()
+	sp.texture = tex
+	sp.pixel_size = 0.62 / tex.get_width()
+	sp.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sp.shaded = false
+	sp.alpha_cut = SpriteBase3D.ALPHA_CUT_OPAQUE_PREPASS
+	sp.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	sp.position.y = 0.2
+	var h := Node3D.new()
+	h.add_child(sp)
+	add_child(h)
+	_dish_spr = h
+	h.scale = Vector3.ONE * 0.5
+	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).tween_property(h, "scale", Vector3.ONE, 0.3)
 
 
 # Teh Tarik: one call per button press. Returns progress 0..1.

@@ -21,8 +21,6 @@ var _anim: AnimationPlayer
 var _dash := 0.0
 var _cd := 0.0
 var _face := Vector3(0, 0, 1)
-var _carry := Sprite3D.new()
-var _carry_key := ""
 var _last: Station
 var _prompt_layer := CanvasLayer.new()
 var _prompt := PanelContainer.new()
@@ -49,13 +47,6 @@ func _ready() -> void:
 	add_child(shape)
 	hand.position = Vector3(0, 0.75, 0.45)
 	add_child(hand)
-	_carry.top_level = true
-	_carry.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_carry.no_depth_test = true
-	_carry.shaded = false
-	_carry.pixel_size = 0.0055
-	_carry.visible = false
-	add_child(_carry)
 	_build_prompt()
 	if Recipes.coop:
 		var tag := Label3D.new()
@@ -263,13 +254,6 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_cues() -> void:
-	var key := Thumbs.key_for(held) if held != null else ""
-	if key != _carry_key:
-		_carry_key = key
-		_carry.visible = key != ""
-		if key != "":
-			_carry.texture = Thumbs.tex(key)
-	_carry.global_position = global_position + Vector3(0, 2.35 + sin(_t * 4.0) * 0.06, 0)
 	var n := _nearest()
 	if n != _last:
 		if is_instance_valid(_last):
@@ -324,6 +308,12 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _interact() -> void:
+	if held is Vessel and (held as Vessel).contents.has("teh:tarik") and kitchen != null and kitchen.cop_near(global_position):
+		held.queue_free()
+		held = null
+		kitchen.bribe()
+		Sfx.play("put")
+		return
 	var s := _nearest()
 	if s == null:
 		return
@@ -355,3 +345,21 @@ func _interact() -> void:
 		held = null
 		s.put(h)
 		Sfx.play("put")
+	elif held != null and kitchen != null and kitchen.game != null:
+		kitchen.game.hint(_why_not(s))
+		Sfx.play("burn")
+
+
+func _why_not(s: Station) -> String:
+	if held is Ingredient:
+		var ing := held as Ingredient
+		if s.kind == Station.Kind.FRY and ing.ingredient_id in Station.BOIL_IDS:
+			return "%s goes in the pot (BOIL)" % ing.ingredient_id.capitalize()
+		if s.kind == Station.Kind.BOIL and ing.has_state("cooked"):
+			return "%s goes in the wok (FRY)" % ing.ingredient_id.capitalize()
+		if s.kind == Station.Kind.HATCH:
+			return "Put it on a plate first"
+		if s.item != null:
+			return "That spot is taken"
+		return "Not here: %s" % ing.ingredient_id
+	return "Not here"

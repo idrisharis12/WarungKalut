@@ -110,6 +110,54 @@ func _initialize() -> void:
 		await process_frame
 	check(pl.stock == stock0 + 1, "washed plate back in clean stack (%d)" % pl.stock)
 
+	# cooking rules
+	var wok: Station
+	var pot: Station
+	for st in chef.stations:
+		if st.kind == Station.Kind.FRY and wok == null:
+			wok = st
+		if st.kind == Station.Kind.BOIL and pot == null:
+			pot = st
+	var chk := ingredient_for_test()
+	var ri := Ingredient.new()
+	ri.ingredient_id = "rice"
+	var an := Ingredient.new()
+	an.ingredient_id = "anchovy"
+	check(wok.accepts(chk) and not pot.accepts(chk), "chicken fries, never boils")
+	check(pot.accepts(ri) and not wok.accepts(ri), "rice boils, never fries")
+	check(wok.accepts(an) and not pot.accepts(an), "anchovy fries, never boils")
+
+	# police thresholds
+	game.point = 60.0
+	game._change(0.0)
+	check(game.police_armed and not game.police_active, "armed above 50, no cop yet")
+	game._change(-35.0)
+	check(game.warned and not game.police_active, "warning siren at 25, no cop yet")
+	game._change(-15.0)
+	check(game.police_active, "cop called below 15")
+	game._change(30.0)
+	check(not game.police_active, "cop leaves at 30")
+	game._change(-30.0)
+	game._change(-40.0)
+	check(game.point == 0.0 and game.police_active, "cop at 0")
+	game.point = 50.0
+	game.police_active = false
+
+	# cop catches chef
+	var kc: Kitchen = k
+	kc._police_call()
+	kc._cop.position = chef.global_position + Vector3(0.3, 0, 0)
+	kc._process(0.1)
+	check(game.over and game.end_panel.visible, "cop catches the chef: busted screen")
+	game.over = false
+	game.end_panel.hide()
+	if is_instance_valid(kc._cop):
+		kc._cop.queue_free()
+		kc._cop = null
+	kc._cop_chase = false
+	game.police_active = false
+	game.point = 20.0
+
 	# fire
 	var stove: Station
 	for st in chef.stations:

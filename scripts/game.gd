@@ -20,6 +20,16 @@ var combo := 0
 var score := 0
 var police_armed := false
 var police_active := false
+var zero_t := 0.0
+var warned := false
+var served_count := 0
+var fires := 0
+var fast_streak := 0
+const WARN_LINE := 30.0
+const COP_LINE := 15.0
+const COP_LEAVE := 30.0
+const TIME_MULT := [1.4, 1.0, 0.8]
+const JOKES := ["No more sambal for you.", "Teh tarik is not served in prison.", "The warung sign stays dark tonight.", "Mak says: I told you to watch the wok."]
 var over := false
 var elapsed := 0.0
 var hold_100 := 0.0
@@ -238,6 +248,13 @@ func _process(delta: float) -> void:
 		_refresh()
 		return
 	elapsed += delta
+	if police_active and point <= 0.0:
+		zero_t += delta
+		if zero_t >= 20.0:
+			busted()
+			return
+	else:
+		zero_t = 0.0
 	_spawn_t -= delta
 	if _spawn_t <= 0.0 and orders.size() < int(level["max"]):
 		_new_order(level["dishes"])
@@ -271,11 +288,13 @@ func add_order(d: String) -> void:
 func _new_order(dishes: Array) -> void:
 	var d: String = dishes.pick_random()
 	var info: Dictionary = Recipes.DISHES[d]
-	orders.append({"dish": d, "left": float(info["time"]), "total": float(info["time"])})
+	var t := float(info["time"]) * float(TIME_MULT[Prefs.difficulty])
+	orders.append({"dish": d, "left": t, "total": t})
 	_beep("bell")
 
 
 func fire_started() -> void:
+	fires += 1
 	_change(-4.0)
 	banner.text = "FIRE! Hold Q to put it out"
 	var tw := create_tween()
@@ -294,6 +313,14 @@ func serve(contents: Array) -> void:
 			combo += 1
 			var gain := float(info["points"]) * (1.0 + 0.25 * mini(combo - 1, 4)) + 3.0 * frac
 			orders.erase(o)
+			served_count += 1
+			fast_streak = fast_streak + 1 if frac > 0.6 else 0
+			_award("first_serve")
+			if combo >= 5:
+				_award("combo5")
+			if fast_streak >= 5:
+				_award("perfect")
+			_popup("+%d" % (int(gain) * 10), Color(1, 0.85, 0.3))
 			score += int(gain) * 10
 			_change(gain)
 			_beep("ok")
@@ -301,6 +328,7 @@ func serve(contents: Array) -> void:
 			_say("%s!  +%d  Combo x%d" % [info["name"], int(gain), combo], Color(0.55, 1, 0.5))
 			return
 	combo = 0
+	fast_streak = 0
 	_change(-4.0)
 	_beep("bad")
 	_say("Wrong dish  -4", Color(1, 0.45, 0.35))
@@ -310,17 +338,69 @@ func _change(d: float) -> void:
 	point = clampf(point + d, 0.0, 100.0)
 	if Recipes.tutorial:
 		return
+	if d < 0.0:
+		_pulse_meter()
 	if point >= Recipes.POLICE_LINE:
 		police_armed = true
-		if police_active:
+	if point >= WARN_LINE:
+		warned = false
+	elif police_armed and not warned and point > COP_LINE and not over:
+		warned = true
+		_beep("bad")
+		_say("Siren in the distance. Keep the meter up!", Color(1, 0.8, 0.3))
+	if police_active:
+		if point >= COP_LEAVE:
 			police_active = false
 			police_left.emit()
-			_say("Police backed off. Stay above 50%!", Color(0.55, 1, 0.5))
-	elif police_armed and not police_active and not over:
+			_say("Police backed off. Keep serving!", Color(0.55, 1, 0.5))
+	elif not over and (point <= 0.0 or (police_armed and point < COP_LINE)):
 		police_active = true
 		police_called.emit()
 		_beep("bad")
-		_say("Police are coming! Get above 50%!", Color(0.45, 0.65, 1.0))
+		_say("Police are coming! Serve fast!", Color(0.45, 0.65, 1.0))
+
+
+func burnt_binned() -> void:
+	_change(-2.0)
+	_say("Burnt food wasted  -2", Color(1, 0.6, 0.35))
+
+
+func hint(t: String) -> void:
+	_say(t, Color(1, 0.85, 0.4))
+
+
+func _award(id: String) -> void:
+	if Prefs.award(id):
+		_toast(String(Prefs.ACHIEVEMENTS[id][0]))
+
+
+func _toast(name: String) -> void:
+	var p := _pill(Color(0.09, 0.3, 0.28, 0.95))
+	p.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	p.position = Vector2(-150, 70)
+	p.add_child(UiKit.lbl(Lang.t("Achievement unlocked") + ": " + name, 18, UiKit.GOLD, 6))
+	ui.add_child(p)
+	var tw := create_tween()
+	tw.tween_interval(2.8)
+	tw.tween_property(p, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(p.queue_free)
+
+
+func _popup(t: String, c: Color) -> void:
+	var l := UiKit.lbl(t, 34, c, 8)
+	l.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	l.position = Vector2(-220, 300)
+	ui.add_child(l)
+	var tw := create_tween().set_parallel()
+	tw.tween_property(l, "position:y", l.position.y - 80.0, 0.9)
+	tw.tween_property(l, "modulate:a", 0.0, 0.9)
+	tw.chain().tween_callback(l.queue_free)
+
+
+func _pulse_meter() -> void:
+	var tw := create_tween()
+	tw.tween_property(bar, "modulate", Color(1, 0.5, 0.5), 0.1)
+	tw.tween_property(bar, "modulate", Color.WHITE, 0.3)
 
 
 func busted() -> void:
@@ -334,6 +414,10 @@ func _end(won: bool) -> void:
 	if won:
 		Recipes.unlock(stage + 2)
 		_beep("ok")
+		if fires == 0:
+			_award("no_fires")
+		if bool(level["boss"]):
+			_award("boss")
 	else:
 		_beep("bad")
 	for c in end_body.get_children():
@@ -349,10 +433,10 @@ func _end(won: bool) -> void:
 		for i in 3:
 			sr.add_child(UiKit.icon("lorc/trophy.png", 44, UiKit.GOLD if i < stars else Color(0.3, 0.27, 0.25)))
 		end_body.add_child(sr)
-	var sl := UiKit.lbl("Score %d    Time %d:%02d" % [score, int(elapsed) / 60, int(elapsed) % 60], 24, UiKit.CREAM)
+	var sl := UiKit.lbl("Score %d    Time %d:%02d    Dishes %d    Fires %d" % [score, int(elapsed) / 60, int(elapsed) % 60, served_count, fires], 22, UiKit.CREAM)
 	sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	end_body.add_child(sl)
-	var sub := UiKit.lbl(("%s is famous!" % level["name"]) if won else "The police caught the chef", 20, UiKit.CREAM)
+	var sub := UiKit.lbl(("%s is famous!" % level["name"]) if won else "The police caught the chef.  " + String(JOKES.pick_random()), 20, UiKit.CREAM)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	end_body.add_child(sub)
 	var learn_id: String = (level["dishes"] as Array).pick_random()
@@ -417,9 +501,11 @@ func _refresh() -> void:
 	if point >= 100.0:
 		status_label.text = "Hold 100%%: %d / %d s" % [int(hold_100), int(level["hold"])]
 	elif police_active:
-		status_label.text = "Police are coming! Get above 50%!"
+		status_label.text = "Police are chasing! Serve to get above %d%%!" % int(COP_LEAVE)
+	elif warned:
+		status_label.text = "Siren! Below %d%% the police come." % int(COP_LINE)
 	elif police_armed:
-		status_label.text = "Police watching: stay above 50%!"
+		status_label.text = "Police watching: stay above %d%%!" % int(WARN_LINE)
 	else:
 		status_label.text = "Reach 50%%, then 100%% for %d s" % int(level["hold"])
 	var live := {}
@@ -434,6 +520,10 @@ func _refresh() -> void:
 		var frac := float(o["left"]) / float(o["total"])
 		(u["bar"] as ProgressBar).value = frac
 		var col := Color(0.35, 0.75, 0.3) if frac > 0.5 else (Color(0.95, 0.75, 0.2) if frac > 0.25 else Color(0.9, 0.25, 0.2))
+		if Prefs.colorblind:
+			col = Color(0.1, 0.45, 0.85) if frac > 0.5 else (Color(0.95, 0.6, 0.1) if frac > 0.25 else Color(0.75, 0.1, 0.55))
+		if frac < 0.2 and o.has("ui"):
+			(o["pc"] as Control).modulate = Color(1, 1, 1) if int(elapsed * 4.0) % 2 == 0 else Color(1, 0.75, 0.75)
 		(u["fill"] as StyleBoxFlat).bg_color = col
 		(u["sb"] as StyleBoxFlat).border_color = col
 	for c in order_box.get_children():
@@ -476,6 +566,13 @@ func _make_ticket(o: Dictionary) -> Dictionary:
 	col.add_child(tb)
 	pc.add_child(col)
 	order_box.add_child(pc)
+	pc.modulate.a = 0.0
+	pc.pivot_offset = Vector2(60, 0)
+	pc.scale = Vector2(0.6, 0.6)
+	var tw := pc.create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(pc, "modulate:a", 1.0, 0.25)
+	tw.tween_property(pc, "scale", Vector2.ONE, 0.3)
+	o["pc"] = pc
 	return {"bar": tb, "fill": fill, "sb": sb}
 
 
@@ -533,15 +630,43 @@ func _book(open_id := "") -> void:
 		pg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		holder.add_child(pg)
 	var first := ""
-	for id in Recipes.DISHES:
-		if first == "":
-			first = id
-		var b := UiKit.button(String(Recipes.DISHES[id]["name"]), UiKit.RED, 18)
-		b.pressed.connect(show.bind(id))
-		tabs.add_child(b)
+	var search := LineEdit.new()
+	search.placeholder_text = Lang.t("Search ingredient or dish")
+	search.custom_minimum_size = Vector2(320, 0)
+	search.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var fav_only := [false]
+	var rebuild := func():
+		for c in tabs.get_children():
+			c.queue_free()
+		var q := search.text.strip_edges().to_lower()
+		var fb := UiKit.button(Lang.t("Favourites"), Color(0.3, 0.14, 0.1), 16)
+		fb.toggle_mode = true
+		fb.button_pressed = fav_only[0]
+		fb.toggled.connect(func(on): fav_only[0] = on; search.text_changed.emit(search.text))
+		tabs.add_child(fb)
+		for id in Recipes.DISHES:
+			var info: Dictionary = Recipes.DISHES[id]
+			if fav_only[0] and not Prefs.favs.has(id):
+				continue
+			var hay := (String(info["name"]) + " " + " ".join(info["items"])).to_lower()
+			if q != "" and not hay.contains(q):
+				continue
+			if first == "":
+				first = id
+			var star := "* " if Prefs.favs.has(id) else ""
+			var b := UiKit.button(star + String(info["name"]), UiKit.RED, 18)
+			b.pressed.connect(show.bind(id))
+			b.gui_input.connect(func(ev: InputEvent):
+				if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_RIGHT:
+					Prefs.toggle_fav(id)
+					b.text = ("* " if Prefs.favs.has(id) else "") + String(info["name"]))
+			tabs.add_child(b)
+	search.text_changed.connect(func(_t): rebuild.call())
+	rebuild.call()
+	book_body.add_child(search)
 	book_body.add_child(tabs)
 	book_body.add_child(holder)
-	var hint := UiKit.lbl("Press B to close", 15, UiKit.CREAM)
+	var hint := UiKit.lbl(Lang.t("Press B to close") + "   (right-click a dish to favourite it)", 15, UiKit.CREAM)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	book_body.add_child(hint)
 	show.call(open_id if open_id != "" else first)
@@ -559,6 +684,7 @@ func _fill_help() -> void:
 		var hl_l := UiKit.lbl(String(e[1]) + "   ", 15, UiKit.CREAM)
 		hl_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		help_row.add_child(hl_l)
+	help_row.get_parent().visible = Prefs.help_always or Recipes.unlocked <= 1 or Recipes.tutorial
 	help_row.add_child(UiKit.keycap("Esc", 26, true))
 	help_row.add_child(UiKit.lbl("Pause", 15, UiKit.CREAM))
 	if Recipes.coop:

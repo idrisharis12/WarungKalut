@@ -7,8 +7,10 @@ signal dish_served(contents: Array)
 signal vessel_gone(plate: bool, delay: float)
 signal plate_washed
 signal fire_started
+signal wasted_burnt
 
 const FIRE_KINDS := [Kind.FRY, Kind.BOIL]
+const BOIL_IDS := ["rice", "noodles"]
 const SPREAD_AFTER := 5.0
 const PUT_OUT_TIME := 1.6
 
@@ -37,10 +39,8 @@ var near := false
 var hint := false
 var prog := 0.0
 var _stack: Array[Vessel] = []
-var _badge := Sprite3D.new()
 var _ring := MeshInstance3D.new()
 var _ring_mat := StandardMaterial3D.new()
-var _badge_key := ""
 var _t := 0.0
 var on_fire := false
 var fire_t := 0.0
@@ -190,13 +190,6 @@ func _make_sign() -> void:
 
 
 func _make_overlays() -> void:
-	_badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_badge.no_depth_test = true
-	_badge.shaded = false
-	_badge.pixel_size = 0.0034
-	_badge.position = Vector3(0, 2.28, 0)
-	_badge.visible = false
-	add_child(_badge)
 	var c := CylinderMesh.new()
 	c.top_radius = 0.6
 	c.bottom_radius = 0.6
@@ -279,7 +272,8 @@ func accepts(held: Node3D) -> bool:
 		Kind.BOARD:
 			return ing.state == "raw" and ing.has_state("chopped")
 		Kind.FRY, Kind.BOIL:
-			return (ing.state == "raw" or ing.state == "chopped") and ing.has_state("cooked")
+			return (ing.state == "raw" or ing.state == "chopped") and ing.has_state("cooked") \
+				and (ing.ingredient_id in BOIL_IDS) == (kind == Kind.BOIL)
 		Kind.MIXER:
 			return ing.state == "raw" and ing.has_state("mixed")
 	return false
@@ -303,6 +297,8 @@ func take_from_crate() -> Node3D:
 
 func put(held: Node3D) -> void:
 	if kind == Kind.BIN:
+		if held is Ingredient and (held as Ingredient).state == "burnt":
+			wasted_burnt.emit()
 		if held is Vessel:
 			vessel_gone.emit(not (held as Vessel).is_glass, 2.0)
 		held.queue_free()
@@ -474,13 +470,6 @@ func _process(delta: float) -> void:
 
 
 func _update_overlays() -> void:
-	var shown := item != null and kind != Kind.BIN and not on_fire
-	var key := Thumbs.key_for(item) if shown else ""
-	if key != _badge_key:
-		_badge_key = key
-		_badge.visible = key != ""
-		if key != "":
-			_badge.texture = Thumbs.tex(key)
 	if kind == Kind.TARIK and item is Vessel:
 		prog = float((item as Vessel).pulls) / Vessel.PULLS if not (item as Vessel).contents.size() > 0 else 1.0
 	elif item == null:
@@ -512,7 +501,7 @@ func _update_overlays() -> void:
 		_ring_mat.albedo_color = Color(0.4, 1.0, 0.45, a)
 	var target := 1.15 if near else 1.0
 	_sign.scale = _sign.scale.lerp(Vector3.ONE * target, 0.2)
-	_sign.global_position = global_position + Vector3(0, 0.2 + (0.05 * sin(_t * 6.0) if guide else 0.0), 0.66)
+	_sign.global_position = global_position + Vector3(0, 0.2 + (0.05 * sin(_t * 6.0) if guide else 0.0), -0.66 if kind == Kind.HATCH else 0.66)
 	label.modulate = Color(1, 1, 0.75) if near else Color.WHITE
 	if guide and _arrow == null:
 		_arrow = Label3D.new()

@@ -143,6 +143,13 @@ func _slider(v: float, lo: float, hi: float, fn: Callable) -> HSlider:
 
 
 func _build_display() -> void:
+	var names := ["Easy", "Normal", "Hard"]
+	var db := _cycle(names[Prefs.difficulty], func(): pass)
+	db.pressed.connect(func():
+		Prefs.difficulty = (Prefs.difficulty + 1) % 3
+		db.text = names[Prefs.difficulty]
+		Prefs.save())
+	_row("Difficulty", db)
 	var lang_b := _cycle("English" if Prefs.lang == "en" else "Bahasa Melayu", func():
 		Prefs.lang = "ms" if Prefs.lang == "en" else "en"
 		Prefs.save()

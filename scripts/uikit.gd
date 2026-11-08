@@ -54,7 +54,7 @@ static func box(bg: Color, border := Color(0, 0, 0, 0), bw := 0, radius := 14, m
 static func lbl(text: String, size := 18, col := CREAM, outline := 0) -> Label:
 	var l := Label.new()
 	l.text = text
-	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_font_size_override("font_size", int(round(size * Prefs.text_scale)))
 	l.add_theme_color_override("font_color", col)
 	if outline > 0:
 		l.add_theme_color_override("font_outline_color", INK)

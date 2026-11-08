@@ -30,6 +30,7 @@ static var outfit2 := 1
 static var hat := 1
 static var hat2 := 0
 static var help_always := false
+static var difficulty := 1
 static var music_on := true
 static var music_vol := 0.7
 static var favs: Array = []
@@ -52,6 +53,7 @@ static func load_prefs() -> void:
 	hat = clampi(int(cf.get_value("prefs", "hat", 1)), 0, HATS.size() - 1)
 	hat2 = clampi(int(cf.get_value("prefs", "hat2", 0)), 0, HATS.size() - 1)
 	help_always = bool(cf.get_value("prefs", "help_always", false))
+	difficulty = clampi(int(cf.get_value("prefs", "difficulty", 1)), 0, 2)
 	music_on = bool(cf.get_value("prefs", "music_on", true))
 	music_vol = clampf(float(cf.get_value("prefs", "music_vol", 0.7)), 0.0, 1.0)
 	favs = Array(cf.get_value("prefs", "favs", []))
@@ -71,6 +73,7 @@ static func save() -> void:
 	cf.set_value("prefs", "hat", hat)
 	cf.set_value("prefs", "hat2", hat2)
 	cf.set_value("prefs", "help_always", help_always)
+	cf.set_value("prefs", "difficulty", difficulty)
 	cf.set_value("prefs", "music_on", music_on)
 	cf.set_value("prefs", "music_vol", music_vol)
 	cf.set_value("prefs", "favs", favs)
