@@ -1,7 +1,7 @@
 class_name UiKit
 extends RefCounted
 
-const ICONS := "res://Assets/game-icons.net.png/icons/000000/transparent/1x1/"
+const ICONS := "res://Assets/ui_icons/"
 const KEYS := "res://Assets/kenney_input-prompts_1.5/Keyboard & Mouse/Default/keyboard_%s.png"
 const INK := Color(0.17, 0.09, 0.07)
 const CREAM := Color(0.99, 0.94, 0.82)

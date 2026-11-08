@@ -35,7 +35,7 @@ static func tex(key: String) -> Texture2D:
 	vp.size = Vector2i(SIZE, SIZE)
 	vp.transparent_bg = true
 	vp.own_world_3d = true
-	vp.msaa_3d = Viewport.MSAA_4X
+	vp.msaa_3d = Viewport.MSAA_2X
 	var root: Window = (Engine.get_main_loop() as SceneTree).root
 	root.add_child.call_deferred(vp)
 	_build.call_deferred(vp, key)

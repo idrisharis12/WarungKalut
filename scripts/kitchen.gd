@@ -592,11 +592,11 @@ func _wall_line(from: Vector3, to: Vector3, along_x: bool, skip: Rect2 = Rect2()
 
 func _surroundings() -> void:
 	_wall_line(Vector3(-1.6, 0, -0.62), Vector3(11.6, 0, -0.62), true)
-	for i in 6:
+	for i in 3:
 		var lamp := OmniLight3D.new()
-		lamp.position = Vector3(i * 2.2, 3.0, 2.0)
+		lamp.position = Vector3(i * 4.4, 3.0, 2.0)
 		lamp.light_color = Color(1.0, 0.85, 0.6)
-		lamp.omni_range = 5.0
+		lamp.omni_range = 7.0
 		lamp.light_energy = 0.15
 		add_child(lamp)
 

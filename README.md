@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/icon.png" width="220" alt="Warung Kalut logo"></p>
+<p align="center"><img src="docs/cover-1360x850.png" alt="Warung Kalut cover art"></p>
 
 # Warung Kalut
 
