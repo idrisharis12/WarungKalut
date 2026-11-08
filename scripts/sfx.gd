@@ -193,7 +193,7 @@ static func play(name: String) -> void:
 	p.pitch_scale = float(d[2]) * randf_range(0.94, 1.06)
 	if p.is_inside_tree():
 		p.play()
-	else:
+	elif not p.ready.is_connected(p.play):
 		p.ready.connect(p.play, CONNECT_ONE_SHOT)
 
 
