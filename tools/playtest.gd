@@ -148,7 +148,9 @@ func _initialize() -> void:
 	kc._police_call()
 	kc._cop.position = chef.global_position + Vector3(0.3, 0, 0)
 	kc._process(0.1)
-	check(game.over and game.end_panel.visible, "cop catches the chef: busted screen")
+	check(game.over, "cop catches the chef: game over")
+	await create_timer(1.6).timeout
+	check(game.end_panel.visible, "busted screen shows after the banner")
 	game.over = false
 	game.end_panel.hide()
 	if is_instance_valid(kc._cop):
@@ -184,6 +186,7 @@ func _initialize() -> void:
 	game.hold_100 = 0.0
 	game._process(0.2)
 	check(game.over and Recipes.unlocked >= 2, "level won, next unlocked (%d)" % Recipes.unlocked)
+	await create_timer(1.6).timeout
 	check(game.end_panel.visible, "end panel shown")
 	game.card.hide()
 	for id in Recipes.DISHES:

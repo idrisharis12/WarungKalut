@@ -468,8 +468,30 @@ func _end(won: bool) -> void:
 	mb.pressed.connect(_go_menu)
 	row.add_child(mb)
 	end_body.add_child(row)
-	end_panel.show()
-	(first if first else rb).grab_focus()
+	var btns: Array[Button] = []
+	for b in row.get_children():
+		btns.append(b as Button)
+		(b as Button).disabled = true
+	var fb: Button = first if first else rb
+	var cheer := UiKit.lbl("LEVEL CLEAR!" if won else "CAUGHT!", 64, UiKit.GOLD if won else Color(1.0, 0.45, 0.4), 12)
+	cheer.set_anchors_preset(Control.PRESET_CENTER)
+	cheer.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	cheer.grow_vertical = Control.GROW_DIRECTION_BOTH
+	cheer.process_mode = Node.PROCESS_MODE_ALWAYS
+	ui.add_child(cheer)
+	cheer.scale = Vector2.ZERO
+	cheer.pivot_offset = cheer.size / 2.0
+	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(cheer, "scale", Vector2.ONE, 0.4)
+	tw.tween_interval(0.9)
+	tw.tween_callback(func():
+		cheer.queue_free()
+		end_panel.show())
+	tw.tween_interval(1.0)
+	tw.tween_callback(func():
+		for b in btns:
+			b.disabled = false
+		fb.grab_focus())
 
 
 func _go_level(i: int) -> void:
@@ -501,7 +523,7 @@ func _refresh() -> void:
 	if point >= 100.0:
 		status_label.text = "Hold 100%%: %d / %d s" % [int(hold_100), int(level["hold"])]
 	elif police_active:
-		status_label.text = "Police are chasing! Serve to get above %d%%!" % int(COP_LEAVE)
+		status_label.text = "Police are chasing! Serve to get above %d%%!%s" % [int(COP_LEAVE), ("  Busted in %d s" % int(ceilf(20.0 - zero_t))) if point <= 0.0 else ""]
 	elif warned:
 		status_label.text = "Siren! Below %d%% the police come." % int(COP_LINE)
 	elif police_armed:

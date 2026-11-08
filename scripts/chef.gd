@@ -211,6 +211,9 @@ func _update_prompt() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if kitchen != null and kitchen.game != null and kitchen.game.over:
+		velocity = Vector3.ZERO
+		return
 	var dir := Input.get_vector(_a("move_left"), _a("move_right"), _a("move_up"), _a("move_down"))
 	var moving := dir.length() > 0.1
 	var want := Vector3(dir.x, 0, dir.y) * speed
@@ -294,6 +297,8 @@ func _nearest() -> Station:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	if kitchen != null and kitchen.game != null and kitchen.game.over:
+		return
 	if e.is_action_pressed(_a("interact")):
 		_interact()
 	elif e.is_action_pressed(_a("work")):
@@ -339,6 +344,15 @@ func _interact() -> void:
 		var ing := s.take() as Ingredient
 		(held as Vessel).add(ing)
 		Sfx.play("put")
+		return
+	if held is Ingredient and s.kind == Station.Kind.PLATES and s.stock > 0 \
+			and Recipes.ITEM_NAMES.has("%s:%s" % [(held as Ingredient).ingredient_id, (held as Ingredient).state]):
+		var plate := s.take_from_crate() as Vessel
+		add_child(plate)
+		plate.add(held as Ingredient)
+		held = plate
+		plate.position = hand.position
+		Sfx.play("pick")
 		return
 	if s.accepts(held):
 		var h := held
