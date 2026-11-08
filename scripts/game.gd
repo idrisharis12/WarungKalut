@@ -58,6 +58,7 @@ var settings_open := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	Gp.game_start()
 	stage = Recipes.level
 	level = Recipes.TUTORIAL if Recipes.tutorial else Recipes.LEVELS[stage]
 	_build_ui()

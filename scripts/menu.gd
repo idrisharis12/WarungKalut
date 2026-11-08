@@ -11,6 +11,7 @@ func _ready() -> void:
 	Recipes.load_progress()
 	Controls.load_settings()
 	Prefs.load_prefs()
+	Gp.init()
 	Prefs.apply_window()
 	Recipes.tutorial = false
 	theme = UiKit.theme()
