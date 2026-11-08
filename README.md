@@ -57,6 +57,8 @@ Food burns if you leave it, and burnt food can start a fire (hold Q to put it ou
 
 ![Gameplay](docs/screenshots/gameplay.png)
 
+![Training level](docs/screenshots/training.png)
+
 ![Level select](docs/screenshots/levels.png)
 
 ## Controls (defaults)
@@ -74,8 +76,9 @@ Food burns if you leave it, and burnt food can start a fire (hold Q to put it ou
 All of these can be changed in Settings.
 
 <details>
-<summary>Settings screenshots</summary>
+<summary>Pause and settings screenshots</summary>
 
+![Pause menu](docs/screenshots/pause.png)
 ![Player 1 controls](docs/screenshots/settings-player1.png)
 ![Player 2 controls](docs/screenshots/settings-player2.png)
 ![General](docs/screenshots/settings-general.png)
@@ -106,7 +109,7 @@ This is a jam project. The automated playtest passes, but the game has had limit
 
 ## Credits and licences
 
-- **Game design and code:** Blakie (K1r4sh0) and friends, built with Claude Code as an AI pair-programmer.
+- **Game design and code:** Blakie (K1r4sh0) and NikDemirel12 (GitHub contributor: police chase, music settings, new title logo).
 - **Engine:** Godot 4.7 (MIT).
 - **3D models and UI:** Kenney (CC0): Food Kit, Mini Shop, Blocky Characters, Skyboxes, UI Pack, Input Prompts.
 - **Icons:** game-icons.net (CC BY 3.0), including Lorc and Andy Meneely.
