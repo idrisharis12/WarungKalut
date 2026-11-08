@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/icon.png" width="220" alt="Warung Kalut logo"></p>
+
 # Warung Kalut
 
 A chaotic, co-op cooking game about Malaysian street food, inspired by Overcooked 2. Chop, mix, fry and boil your way through a warung while orders pile up, and learn what each dish is made of along the way.
